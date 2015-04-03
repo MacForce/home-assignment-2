@@ -201,3 +201,8 @@ class CreateForm(Component):
             return False
         except NoSuchElementException as ignore:
             return True
+
+    def is_error(self):
+        return WebDriverWait(self.driver, 2, 0.1).until(
+            lambda d: d.find_element(By.CLASS_NAME, 'system-message-error').is_displayed()
+        )

@@ -8,7 +8,7 @@ from tests.MainTest import MainTestCase
 
 if __name__ == '__main__':
     suite = unittest.TestSuite((
-        # unittest.makeSuite(MainTestCase),
+        unittest.makeSuite(MainTestCase),
         unittest.makeSuite(TopicTestCase),
         unittest.makeSuite(TopicNotCreateTestCase)
     ))
