@@ -3,14 +3,13 @@ import os
 import unittest
 from selenium.webdriver import DesiredCapabilities, Remote
 from pages import EditTopicPage
-from MainTest import auth, BLOG, TITLE, TEXT
+from MainTest import auth, BLOG, TITLE, TEXT, BROWSER
 
 class NoTopicTestCase(unittest.TestCase):
     def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
         self.driver = Remote(
             command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+            desired_capabilities=getattr(DesiredCapabilities, BROWSER).copy()
         )
         auth(self.driver)
 

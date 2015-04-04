@@ -3,17 +3,16 @@ import os
 import unittest
 from selenium.webdriver import DesiredCapabilities, Remote
 from pages import EditTopicPage, TopicsPage, ViewTopicPage
-from MainTest import auth, delete_topic, BLOG, TITLE, TEXT
+from MainTest import auth, delete_topic, BLOG, TITLE, TEXT, BROWSER
 
 EXTERNAL_IMG = 'www.google.ru/intl/en_ALL/images/srpr/logo11w.png'
 MAX_TITLE = 'a' * 250
 
 class TopicTestCase(unittest.TestCase):
     def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
         self.driver = Remote(
             command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+            desired_capabilities=getattr(DesiredCapabilities, BROWSER).copy()
         )
         auth(self.driver)
 
@@ -329,12 +328,18 @@ class TopicTestCase(unittest.TestCase):
 
         topic_page = ViewTopicPage.Page(self.driver)
         self.assertEqual(TITLE,topic_page.topic.get_title())
-        self.assertTrue(topic_page.topic.is_img('my_img', align='center'))
+        if BROWSER == 'FIREFOX':
+            self.assertTrue(topic_page.topic.is_img('my_img', align='middle'))
+        else:
+            self.assertTrue(topic_page.topic.is_img('my_img', align='center'))
 
         topic_page.topic.open_blog()
         blog_page = TopicsPage.Page(self.driver)
         self.assertEqual(TITLE,blog_page.topic.get_title())
-        self.assertTrue(blog_page.topic.is_img('my_img', align='center'))
+        if BROWSER == 'FIREFOX':
+            self.assertTrue(blog_page.topic.is_img('my_img', align='middle'))
+        else:
+            self.assertTrue(blog_page.topic.is_img('my_img', align='center'))
 
     def test_load_image_with_title(self):
         edit_page = EditTopicPage.Page(self.driver)
@@ -369,18 +374,21 @@ class TopicTestCase(unittest.TestCase):
         create_form.set_text_insert_image(EXTERNAL_IMG, download=True)
 
         img = ['<img','.png']
-        self.assertTrue(all(x in create_form.get_editor_text() for x in img))
+        img_tag = create_form.get_editor_text()
+        self.assertTrue(all(x in img_tag for x in img))
+        tmp = img_tag[:img_tag.index('.png')]
+        img_name = tmp[tmp.rfind('/') + 1:]
 
         create_form.submit()
 
         topic_page = ViewTopicPage.Page(self.driver)
         self.assertEqual(TITLE,topic_page.topic.get_title())
-        self.assertTrue(topic_page.topic.is_img('.png'))
+        self.assertTrue(topic_page.topic.is_img(img_name + '.png'))
 
         topic_page.topic.open_blog()
         blog_page = TopicsPage.Page(self.driver)
         self.assertEqual(TITLE,blog_page.topic.get_title())
-        self.assertTrue(blog_page.topic.is_img('.png'))
+        self.assertTrue(blog_page.topic.is_img(img_name + '.png'))
 
     def test_insert_image(self):
         edit_page = EditTopicPage.Page(self.driver)
@@ -421,12 +429,18 @@ class TopicTestCase(unittest.TestCase):
 
         topic_page = ViewTopicPage.Page(self.driver)
         self.assertEqual(TITLE,topic_page.topic.get_title())
-        self.assertTrue(topic_page.topic.is_img('http://'+EXTERNAL_IMG, align='center'))
+        if BROWSER == 'FIREFOX':
+            self.assertTrue(topic_page.topic.is_img('http://'+EXTERNAL_IMG, align='middle'))
+        else:
+            self.assertTrue(topic_page.topic.is_img('http://'+EXTERNAL_IMG, align='center'))
 
         topic_page.topic.open_blog()
         blog_page = TopicsPage.Page(self.driver)
         self.assertEqual(TITLE,blog_page.topic.get_title())
-        self.assertTrue(blog_page.topic.is_img('http://'+EXTERNAL_IMG, align='center'))
+        if BROWSER == 'FIREFOX':
+            self.assertTrue(blog_page.topic.is_img('http://'+EXTERNAL_IMG, align='middle'))
+        else:
+            self.assertTrue(blog_page.topic.is_img('http://'+EXTERNAL_IMG, align='center'))
 
     def test_insert_image_with_title(self):
         edit_page = EditTopicPage.Page(self.driver)

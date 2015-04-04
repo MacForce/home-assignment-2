@@ -14,7 +14,7 @@ class Page(BasicPage):
 
 class CreateForm(Component):
     BLOG_SELECT = '//a[@class="chzn-single"]'
-    BLOG = '//li/em[contains(text(),"{}")]'
+    BLOG = '//li/em[contains(text(),"%s")]'
     TITLE = '//input[@name="title"]'
     TEXT_FIELD = '//textarea[@id="id_text"]'
     CREATE_BUTTON = '//button[contains(text(),"Создать")]'
@@ -27,8 +27,8 @@ class CreateForm(Component):
 
     def set_blog(self, blog):
         self.driver.find_element_by_xpath(self.BLOG_SELECT).click()
-        self.driver.find_element_by_xpath('//div[@class="chzn-search"]/input').send_keys(blog.decode('utf-8'))
-        self.driver.find_element_by_xpath(self.BLOG.format(blog)).click()
+        self.driver.find_element_by_xpath('//div[@class="chzn-search"]/input').send_keys(blog)
+        self.driver.find_element_by_xpath(self.BLOG % blog).click()
 
     def set_title(self,title):
         self.driver.find_element_by_xpath(self.TITLE).send_keys(title)

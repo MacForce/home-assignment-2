@@ -29,98 +29,65 @@ class Topic(Component):
         )
 
     def is_h4(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/h4')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/h4')).text)
 
     def is_h5(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/h5')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/h5')).text)
 
     def is_h6(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/h6')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/h6')).text)
 
     def is_bold(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/strong')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/strong')).text)
 
     def is_italic(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/em')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/em')).text)
 
     def is_stroke(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/s')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/s')).text)
 
     def is_underline(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/u')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/u')).text)
 
     def is_quote(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/blockquote')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/blockquote')).text)
 
     def is_code(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/code')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/code')).text)
 
     def is_ordered_list(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/ol/li')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/ol/li')).text)
 
     def is_unordered_list(self, text):
-        if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/ul/li')).text):
-            return True
-        return False
+        return text == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/ul/li')).text)
 
     def is_link(self, url):
-        if url == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href')):
-            return True
-        return False
+        return url == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href'))
 
-    def is_img(self, img_name, align=None, title=None):
-        WebDriverWait(self.driver, 30, 0.1).until(
-                EC.visibility_of_element_located((By.XPATH, self.TEXT.format('/img'))))
-        img_tag = self.driver.find_element_by_xpath(self.TEXT.format('/img'))
-        if img_name in img_tag.get_attribute('src'):
-            if align is not None and align != img_tag.get_attribute('align'):
-                if align == 'center':
-                    if 'middle' != img_tag.get_attribute('align'):
-                        return False
-                else:
-                    return False
-            if title is not None and title != img_tag.get_attribute('title'):
-                return False
-            return True
-        return False
+    def is_img(self, img_name, align='', title=''):
+        image = WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/img'))
+        )
+        image_src = image.get_attribute('src')
+        image_align = image.get_attribute('align')
+        image_title = image.get_attribute('title')
+        return img_name in image_src and align == image_align and title == image_title
 
     def is_text_contains_user_ref(self, user_path):
-        if 'http://ftest.stud.tech-mail.ru{}'.format(user_path) == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href')):
-            return True
-        return False
+        return 'http://ftest.stud.tech-mail.ru{}'.format(user_path) == WebDriverWait(self.driver, 30, 0.1).until(
+            lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href'))
 
     def is_forbid_comment(self):
             return len(self.driver.find_elements_by_xpath('//h4[@class="reply-header"]')) == 0

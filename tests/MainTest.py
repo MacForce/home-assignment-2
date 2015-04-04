@@ -10,7 +10,8 @@ from pages import MainPage, EditTopicPage, TopicsPage, ViewTopicPage, LoginPage
 USERNAME = u'Владимир Мижуев'
 USEREMAIL = 'ftest5@tech-mail.ru'
 PASSWORD = os.environ['TTHA2PASSWORD']
-BLOG = 'Флудилка'
+BROWSER = os.environ.get('TTHA2BROWSER', 'CHROME')
+BLOG = u'Флудилка'
 TITLE = u'ТиПо ЗаГоЛоВоК'
 TEXT = u'Основной текст топика!'
 
@@ -38,10 +39,9 @@ def delete_topic(driver, title=TITLE):
 
 class MainTestCase(unittest.TestCase):
     def setUp(self):
-        browser = os.environ.get('TTHA2BROWSER', 'CHROME')
         self.driver = Remote(
             command_executor='http://127.0.0.1:4444/wd/hub',
-            desired_capabilities=getattr(DesiredCapabilities, browser).copy()
+            desired_capabilities=getattr(DesiredCapabilities, BROWSER).copy()
         )
 
     def tearDown(self):
