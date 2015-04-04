@@ -2,6 +2,9 @@
 import os
 import unittest
 from selenium.webdriver import DesiredCapabilities, Remote
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
 from pages import MainPage, EditTopicPage, TopicsPage, ViewTopicPage, LoginPage
 
 USERNAME = u'Владимир Мижуев'
@@ -9,10 +12,9 @@ USEREMAIL = 'ftest5@tech-mail.ru'
 PASSWORD = os.environ['TTHA2PASSWORD']
 BLOG = 'Флудилка'
 TITLE = u'ТиПо ЗаГоЛоВоК'
-SHORT_TEXT = u'Короткий текст, отображается в блогах!'
-MAIN_TEXT = u'Текст под катом! Отображается внутри топика!'
+TEXT = u'Основной текст топика!'
 
-def auth(driver, email=USEREMAIL, password=PASSWORD, username=USERNAME):
+def auth(driver, email=USEREMAIL, password=PASSWORD):
     auth_page = LoginPage.Page(driver)
     auth_page.open()
 
@@ -21,12 +23,9 @@ def auth(driver, email=USEREMAIL, password=PASSWORD, username=USERNAME):
     auth_form.set_login(email)
     auth_form.set_password(password)
     auth_form.submit()
-
-    main_page = MainPage.Page(driver)
-    user_name = main_page.top_menu.get_username()
-    if username == user_name:
-        return True
-    return False
+    WebDriverWait(driver, 30, 0.1).until(
+         expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="popup-login"]'))
+    )
 
 def delete_topic(driver, title=TITLE):
     blog_page = TopicsPage.Page(driver)
@@ -49,29 +48,33 @@ class MainTestCase(unittest.TestCase):
         self.driver.quit()
 
     def test_auth(self):
-        self.assertTrue(auth(self.driver))
+        auth(self.driver)
+        main_page = MainPage.Page(self.driver)
+        user_name = main_page.top_menu.get_username()
+        if USERNAME == user_name:
+            return True
+        return False
 
     def test_create_delete_topic(self):
-        self.assertTrue(auth(self.driver))
+        auth(self.driver)
 
         edit_page = EditTopicPage.Page(self.driver)
         edit_page.open()
 
         create_form = edit_page.form
-        create_form.blog_select_open()
-        create_form.blog_select_set_option(BLOG)
+        create_form.set_blog(BLOG)
         create_form.set_title(TITLE)
-        create_form.set_short_text(SHORT_TEXT)
-        create_form.set_main_text(MAIN_TEXT)
+        create_form.set_text(TEXT)
         create_form.submit()
 
-        topic_page = ViewTopicPage.Page(self.driver)
-        self.assertEqual(TITLE,topic_page.topic.get_title())
-        self.assertEqual(MAIN_TEXT,topic_page.topic.get_text())
+        try:
+            topic_page = ViewTopicPage.Page(self.driver)
+            self.assertEqual(TITLE,topic_page.topic.get_title())
+            self.assertEqual(TEXT,topic_page.topic.get_text())
 
-        topic_page.topic.open_blog()
-        blog_page = TopicsPage.Page(self.driver)
-        self.assertEqual(TITLE,blog_page.topic.get_title())
-        self.assertEqual(SHORT_TEXT,blog_page.topic.get_text())
-
-        self.assertTrue(delete_topic(self.driver))
+            topic_page.topic.open_blog()
+            blog_page = TopicsPage.Page(self.driver)
+            self.assertEqual(TITLE,blog_page.topic.get_title())
+            self.assertEqual(TEXT,blog_page.topic.get_text())
+        finally:
+            self.assertTrue(delete_topic(self.driver))

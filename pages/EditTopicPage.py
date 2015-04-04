@@ -1,11 +1,9 @@
 # coding: utf-8
-import time
 from Page import Component, BasicPage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver import ActionChains
-from selenium.common.exceptions import NoSuchElementException
 
 class Page(BasicPage):
     PATH = '/blog/topic/create/'
@@ -15,159 +13,129 @@ class Page(BasicPage):
         return CreateForm(self.driver)
 
 class CreateForm(Component):
-    BLOGSELECT = '//a[@class="chzn-single"]'
-    OPTION = '//li[text()="{}"]'
+    BLOG_SELECT = '//a[@class="chzn-single"]'
+    BLOG = '//li/em[contains(text(),"{}")]'
     TITLE = '//input[@name="title"]'
-    # SHORT_TEXT = '//textarea[@name="text_short"]'
-    # MAIN_TEXT = '//textarea[@id="id_text"]'
+    TEXT_FIELD = '//textarea[@id="id_text"]'
     CREATE_BUTTON = '//button[contains(text(),"Создать")]'
-    ADD_TEXT_SCRIPT = u"$(\'.CodeMirror\')[{0}].CodeMirror.setValue(\"{1}\")"
-    TEXT_FIELD = '//div[contains(@class, "CodeMirror cm-s-paper")][{}]//div[@class="CodeMirror-code"]/pre'
-    FORMAT_TOOLBAR = '//div[@class="editor-toolbar"][{0}]//*[@class="markdown-editor-icon-{1}"{2}]'
+    TOOLBAR = '//div[@id="markItUpId_text"]//a[text()="{}"]'.decode()
+    UNORDER_LIST = '//div[@id="markItUpId_text"]//li[@class="markItUpButton markItUpButton10 editor-ul"]//a[text()="Список"]'
+    ORDER_LIST = '//div[@id="markItUpId_text"]//li[@class="markItUpButton markItUpButton11 editor-ol"]//a[text()="Список"]'
     SEARCH_USER_INPUT = '//div[@id="popup-search-user"][1]//input[@id="search-user-login-popup"]'
     SEARCH_USER_SUBMIT = '//div[@id="popup-search-user"][1]//input[@type="submit"]'
+    ANSWER = '//div[@class="poll-create"]//input[@id="id_form-{}-answer" and @type="text"]'
 
-    def blog_select_open(self):
-        self.driver.find_element_by_xpath(self.BLOGSELECT).click()
-
-    def blog_select_set_option(self, option_text):
-        self.driver.find_element_by_xpath(self.OPTION.format(option_text)).click()
+    def set_blog(self, blog):
+        self.driver.find_element_by_xpath(self.BLOG_SELECT).click()
+        self.driver.find_element_by_xpath('//div[@class="chzn-search"]/input').send_keys(blog.decode('utf-8'))
+        self.driver.find_element_by_xpath(self.BLOG.format(blog)).click()
 
     def set_title(self,title):
         self.driver.find_element_by_xpath(self.TITLE).send_keys(title)
 
-    def set_short_text(self,short_text):
-        # self.driver.find_element_by_xpath(self.SHORT_TEXT).send_keys(short_text)
-        self.driver.execute_script(self.ADD_TEXT_SCRIPT.format(u'0', short_text))
+    def set_text(self,text):
+        text_field = self.driver.find_element_by_xpath(self.TEXT_FIELD)
+        text_field.clear()
+        text_field.send_keys(text)
 
-    def set_text_emulate(self,short_text):
+    def set_text_emulate(self,text):
         actions = ActionChains(self.driver)
         # actions.click(self.driver.find_elements(By.CLASS_NAME, 'CodeMirror-scroll')[0])
-        actions.send_keys(short_text)
+        actions.send_keys(text)
         actions.perform()
 
-    def set_main_text(self,main_text):
-        # self.driver.find_element_by_xpath(self.MAIN_TEXT).send_keys(main_text)
-        self.driver.execute_script(self.ADD_TEXT_SCRIPT.format(u'1', main_text))
-
-    def get_editor_short_text(self):
-        return self.driver.find_element_by_xpath(self.TEXT_FIELD.format('1')).text
-
-    def get_editor_main_text(self):
-        return self.driver.find_element_by_xpath(self.TEXT_FIELD.format('2')).text
+    def get_editor_text(self):
+        return self.driver.find_element_by_xpath(self.TEXT_FIELD).get_attribute("value")
 
     def submit(self):
         self.driver.find_element_by_xpath(self.CREATE_BUTTON).click()
 
-    def set_bold_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'bold', '')).click()
+    def set_text_h4(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('H4'.decode('utf-8'))).click()
 
-    def set_bold_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'bold', '')).click()
+    def set_text_h5(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('H5'.decode('utf-8'))).click()
 
-    def set_italic_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'italic', '')).click()
+    def set_text_h6(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('H6'.decode('utf-8'))).click()
 
-    def set_italic_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'italic', '')).click()
+    def set_text_bold(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('жирный'.decode('utf-8'))).click()
 
-    def set_quote_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'quote', '')).click()
+    def set_text_italic(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('курсив'.decode('utf-8'))).click()
 
-    def set_quote_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'quote', '')).click()
+    def set_text_stroke(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('зачеркнутый'.decode('utf-8'))).click()
 
-    def set_unordered_list_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'unordered-list', '')).click()
+    def set_text_underline(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('подчеркнутый'.decode('utf-8'))).click()
 
-    def set_unordered_list_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'unordered-list', '')).click()
+    def set_text_quote(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('цитировать'.decode('utf-8'))).click()
 
-    def set_ordered_list_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'ordered-list', '')).click()
+    def set_text_code(self):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('код'.decode('utf-8'))).click()
 
-    def set_ordered_list_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'ordered-list', '')).click()
+    def set_text_unordered_list(self):
+        self.driver.find_element_by_xpath(self.UNORDER_LIST).click()
 
-    def set_link_short_text(self, link):
+    def set_text_ordered_list(self):
+        self.driver.find_element_by_xpath(self.ORDER_LIST).click()
+
+    def set_text_insert_image(self, img_url, align='нет', option='', download=False):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('изображение'.decode('utf-8'))).click()
+        self.driver.find_element_by_xpath('//a[text()="Из интернета"]').click()
+        self.driver.find_element_by_xpath('//input[@id="img_url"]').send_keys(img_url)
         self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('1', 'link', ' and @title="Вставить ссылку"')).click()
+            '//select[@id="form-image-url-align"]/option[text()="{}"]'.decode().format(align.decode('utf-8'))).click()
+        self.driver.find_element_by_xpath('//input[@id="form-image-url-title"]').send_keys(option)
+        if download:
+            self.driver.find_element_by_xpath('//button[@id="submit-image-upload-link-upload"]').click()
+        else:
+            self.driver.find_element_by_xpath('//button[@id="submit-image-upload-link"]').click()
+        WebDriverWait(self.driver, 30, 0.1).until(
+            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]'))
+        )
+
+    def set_text_load_image(self, img_path, align='нет', option=''):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('изображение'.decode('utf-8'))).click()
+        self.driver.find_element_by_xpath('//a[text()="С компьютера"]').click()
+        self.driver.find_element_by_xpath('(//input[@id="img_file"])').send_keys(img_path)
+        self.driver.find_element_by_xpath(
+            '//select[@id="form-image-align"]/option[text()="{}"]'.decode().format(align.decode('utf-8'))).click()
+        self.driver.find_element_by_xpath('//input[@id="form-image-title"]').send_keys(option)
+        self.driver.find_element_by_xpath('//button[@id="submit-image-upload"]').click()
+        WebDriverWait(self.driver, 30, 0.1).until(
+            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]')))
+
+    def set_text_link(self, link):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('Ссылка'.decode('utf-8'))).click()
+        WebDriverWait(self.driver, 30, 0.1).until(expected_conditions.alert_is_present())
         alert = self.driver.switch_to.alert
         alert.send_keys(link)
         alert.accept()
 
-    def set_link_main_text(self, link):
-        self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('2', 'link', ' and @title="Вставить ссылку"')).click()
-        alert = self.driver.switch_to.alert
-        alert.send_keys(link)
-        alert.accept()
 
-    def set_insert_image_short_text(self, link):
-        self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('1', 'image', ' and @title="Вставить изображение"')).click()
-        alert = self.driver.switch_to.alert
-        alert.send_keys(link)
-        alert.accept()
-
-    def set_insert_image_main_text(self, link):
-        self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('2', 'image', ' and @title="Вставить изображение"')).click()
-        alert = self.driver.switch_to.alert
-        alert.send_keys(link)
-        alert.accept()
-
-    def set_load_image_short_text(self, image_path):
-        # self.driver.find_element_by_xpath(
-        #     self.FORMAT_TOOLBAR.format('1', 'image', ' and @title="Загрузить изображение"')).click()
-        # self.driver.find_element_by_xpath('(//input[@name="filedata"])[1]').send_keys(image_path)
-        # WebDriverWait(self.driver, 30, 0.1).until(
-        #     expected_conditions.presence_of_element_located((By.XPATH, '(//input[@name="filedata"])[1]')))
-        # time.sleep(1)
-        self.driver.execute_script(self.ADD_TEXT_SCRIPT.format(u'0', '![]({})'.format(image_path)))
-
-    def set_load_image_main_text(self, image_path):
-        # self.driver.find_element_by_xpath(
-        #     self.FORMAT_TOOLBAR.format('2', 'image', ' and @title="Загрузить изображение"')).click()
-        # self.driver.find_element_by_xpath('(//input[@name="filedata"])[1]').send_keys(image_path)
-        # WebDriverWait(self.driver, 30, 0.1).until(
-        #     expected_conditions.presence_of_element_located((By.XPATH, '(//input[@name="filedata"])[1]')))
-        # time.sleep(1)
-        self.driver.execute_script(self.ADD_TEXT_SCRIPT.format(u'1', '![]({})'.format(image_path)))
-
-    def set_insert_user_short_text(self, user, user_path):
-        self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('1', 'link', ' and @title="Добавить пользователя"')).click()
+    def set_text_insert_user(self, user, user_path):
+        self.driver.find_element_by_xpath(self.TOOLBAR.format('Пользователь'.decode('utf-8'))).click()
         input_field = self.driver.find_element_by_xpath(self.SEARCH_USER_INPUT)
-        if input_field.get_attribute('value') == '':
-            self.driver.find_element_by_xpath(self.SEARCH_USER_INPUT).send_keys(user)
+        input_field_value = input_field.get_attribute('value')
+        if input_field_value == '':
+            input_field.send_keys(user.decode('utf-8'))
         self.driver.find_element_by_xpath(self.SEARCH_USER_SUBMIT).click()
-        time.sleep(2)
+        WebDriverWait(self.driver, 30, 0.1).until(
+            expected_conditions.visibility_of_element_located((By.XPATH, '//p[@class="realname"]//a[@href="{}"]'.format(user_path)))
+        )
         self.driver.find_element_by_xpath('//p[@class="realname"]//a[@href="{}"]'.format(user_path)).click()
-        # WebDriverWait(self.driver, 30, 0.1).until(
-        #     expected_conditions.visibility_of_element_located((By.XPATH, self.SEARCH_USER_INPUT)))
-        time.sleep(2)
+        WebDriverWait(self.driver, 30, 0.1).until(
+            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="popup-search-user"]')))
 
-    def set_insert_user_main_text(self, user, user_path):
-        button = self.driver.find_element_by_xpath(
-            self.FORMAT_TOOLBAR.format('2', 'link', ' and @title="Добавить пользователя"'))
-        print button.get_attribute('innerHTML')
-        button.click()
-        input_field = self.driver.find_element_by_xpath(self.SEARCH_USER_INPUT)
-        if input_field.get_attribute('value') == '':
-            self.driver.find_element_by_xpath(self.SEARCH_USER_INPUT).send_keys(user)
-        self.driver.find_element_by_xpath(self.SEARCH_USER_SUBMIT).click()
-        time.sleep(2)
-        self.driver.find_element_by_xpath('//p[@class="realname"]//a[@href="{}"]'.format(user_path)).click()
-        # WebDriverWait(self.driver, 30, 0.1).until(
-        #     expected_conditions.visibility_of_element_located((By.XPATH, self.SEARCH_USER_INPUT)))
-        time.sleep(2)
-
-    def set_preview_short_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('1', 'preview', '')).click()
-
-    def set_preview_main_text(self):
-        self.driver.find_element_by_xpath(self.FORMAT_TOOLBAR.format('2', 'preview', '')).click()
+    def test_preview(self):
+        self.driver.find_element_by_xpath('//button[@id="submit_preview"]').click()
+        return WebDriverWait(self.driver, 1, 0.1).until(
+            lambda d: d.find_element_by_xpath('//div[@id="text_preview"]').is_displayed()
+        )
 
     def set_forbid_comment(self):
         self.driver.find_element_by_xpath('//input[@name="forbid_comment"]').click()
@@ -176,31 +144,15 @@ class CreateForm(Component):
         self.driver.find_element_by_xpath('//input[@name="add_poll"]').click()
         self.driver.find_element_by_xpath('//div[@class="poll-create"]//input[@id="id_question"]').send_keys(question)
         if len(answers) > 2:
-            i = 2
-            while i < len(answers):
+            for i in range(len(answers) - 2):
                 self.driver.find_element_by_xpath('//a[contains(@class, "add-poll-answer")]').click()
-                i += 1
-        i = 0
-        for ans in answers:
-            self.driver.find_element_by_xpath(
-                '//div[@class="poll-create"]//input[@id="id_form-{}-answer" and @type="text"]'.format(i)).send_keys(ans)
-            i += 1
+        for n, ans in enumerate(answers):
+            self.driver.find_element_by_xpath(self.ANSWER.format(n)).send_keys(ans)
 
-    def test_add_poll_remove_answer(self):
-        self.driver.find_element_by_xpath('//input[@name="add_poll"]').click()
-
-        self.driver.find_element_by_xpath('//a[contains(@class, "add-poll-answer")]').click()
-        self.driver.find_element_by_xpath(
-            '//div[@class="poll-create"]//input[@id="id_form-{}-answer" and @type="text"]'.format(2))
-
+    def set_remove_answer(self):
         self.driver.find_element_by_xpath(
             '//li[@class="poll-answer-container"][{}]//a[@class="remove-poll-answer icon-synio-remove"]'.format(3)).click()
-        try:
-            self.driver.find_element_by_xpath(
-                '//div[@class="poll-create"]//input[@id="id_form-{}-answer" and @type="text"]'.format(2))
-            return False
-        except NoSuchElementException as ignore:
-            return True
+        return len(self.driver.find_elements_by_xpath(self.ANSWER.format(2))) == 0
 
     def is_error(self):
         return WebDriverWait(self.driver, 2, 0.1).until(

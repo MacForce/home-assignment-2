@@ -1,7 +1,8 @@
 # coding: utf-8
 from Page import BasicPage, Component
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions
 
 class Page(BasicPage):
     PATH = '/blog/show/2544/fludilka/'
@@ -24,25 +25,60 @@ class Topic(Component):
 
     def get_text(self):
         return WebDriverWait(self.driver, 30, 0.1).until(
-            lambda d: d.find_element_by_xpath(self.TEXT.format('/p')).text
+            lambda d: d.find_element_by_xpath(self.TEXT.format('')).text
         )
+
+    def is_h4(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/h4')).text):
+            return True
+        return False
+
+    def is_h5(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/h5')).text):
+            return True
+        return False
+
+    def is_h6(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/h6')).text):
+            return True
+        return False
 
     def is_bold(self, text):
         if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/strong')).text):
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/strong')).text):
             return True
         return False
 
     def is_italic(self, text):
         if text == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/em')).text):
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/em')).text):
+            return True
+        return False
+
+    def is_stroke(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/s')).text):
+            return True
+        return False
+
+    def is_underline(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/u')).text):
             return True
         return False
 
     def is_quote(self, text):
-        real_text = WebDriverWait(self.driver, 30, 0.1).until(
-            lambda d: d.find_element_by_xpath(self.TEXT.format('/p')).text)
-        if text in real_text and real_text.startswith('>'):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/blockquote')).text):
+            return True
+        return False
+
+    def is_code(self, text):
+        if text == WebDriverWait(self.driver, 30, 0.1).until(
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/code')).text):
             return True
         return False
 
@@ -60,41 +96,36 @@ class Topic(Component):
 
     def is_link(self, url):
         if url == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/a')).get_attribute('href')):
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href')):
             return True
         return False
 
-    def is_text_contains_img(self, img_name):
+    def is_img(self, img_name, align=None, title=None):
         if img_name in WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/img')).get_attribute('src')):
-            return True
-        return False
-
-    def is_text_contains_external_img(self, img_url):
-        if img_url == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/img')).get_attribute('src')):
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('src')):
+            if align is not None:
+                if align != self.driver.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('align'):
+                    return False
+            if title is not None:
+                if title != self.driver.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('title'):
+                    return False
             return True
         return False
 
     def is_text_contains_user_ref(self, user_path):
         if 'http://ftest.stud.tech-mail.ru{}'.format(user_path) == WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/p/a')).get_attribute('href')):
+                lambda d: d.find_element_by_xpath(self.TEXT.format('/a')).get_attribute('href')):
             return True
         return False
 
     def is_forbid_comment(self):
-        try:
-            WebDriverWait(self.driver, 2, 0.1).until(lambda d: d.find_element_by_xpath('//h4[@class="reply-header"]'))
-            return False
-        except TimeoutException as ignore:
-            return True
+            return len(self.driver.find_elements_by_xpath('//h4[@class="reply-header"]')) == 0
+
 
     def is_poll(self, answers):
-        i = 1
-        for ans in answers:
-            if ans not in self.driver.find_element_by_xpath('//ul[@class="poll-vote"]/li[{}]'.format(i)).text:
+        for i, ans in enumerate(answers):
+            if ans not in self.driver.find_element_by_xpath('//ul[@class="poll-vote"]/li[{}]'.format(i + 1)).text:
                 return False
-            i += 1
         return True
 
     def open_blog(self):
@@ -102,4 +133,7 @@ class Topic(Component):
 
     def delete(self):
         self.driver.find_element_by_xpath(self.DELETE_BUTTON).click()
+        WebDriverWait(self.driver, 30, 0.1).until(
+            expected_conditions.visibility_of_element_located((By.XPATH, self.DELETE_BUTTON_CONFIRM))
+        )
         self.driver.find_element_by_xpath(self.DELETE_BUTTON_CONFIRM).click()
