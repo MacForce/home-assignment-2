@@ -2,7 +2,7 @@
 from Page import Component, BasicPage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains
 
 class Page(BasicPage):
@@ -40,7 +40,6 @@ class CreateForm(Component):
 
     def set_text_emulate(self,text):
         actions = ActionChains(self.driver)
-        # actions.click(self.driver.find_elements(By.CLASS_NAME, 'CodeMirror-scroll')[0])
         actions.send_keys(text)
         actions.perform()
 
@@ -95,7 +94,7 @@ class CreateForm(Component):
         else:
             self.driver.find_element_by_xpath('//button[@id="submit-image-upload-link"]').click()
         WebDriverWait(self.driver, 30, 0.1).until(
-            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]'))
+            EC.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]'))
         )
 
     def set_text_load_image(self, img_path, align='нет', option=''):
@@ -107,11 +106,12 @@ class CreateForm(Component):
         self.driver.find_element_by_xpath('//input[@id="form-image-title"]').send_keys(option)
         self.driver.find_element_by_xpath('//button[@id="submit-image-upload"]').click()
         WebDriverWait(self.driver, 30, 0.1).until(
-            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]')))
+            EC.invisibility_of_element_located((By.XPATH, '//div[@id="window_upload_img"]'))
+        )
 
     def set_text_link(self, link):
         self.driver.find_element_by_xpath(self.TOOLBAR.format('Ссылка'.decode('utf-8'))).click()
-        WebDriverWait(self.driver, 30, 0.1).until(expected_conditions.alert_is_present())
+        WebDriverWait(self.driver, 30, 0.1).until(EC.alert_is_present())
         alert = self.driver.switch_to.alert
         alert.send_keys(link)
         alert.accept()
@@ -124,12 +124,14 @@ class CreateForm(Component):
         if input_field_value == '':
             input_field.send_keys(user.decode('utf-8'))
         self.driver.find_element_by_xpath(self.SEARCH_USER_SUBMIT).click()
+        user_ref = '//p[@class="realname"]//a[@href="{}"]'.format(user_path)
         WebDriverWait(self.driver, 30, 0.1).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, '//p[@class="realname"]//a[@href="{}"]'.format(user_path)))
+            EC.visibility_of_element_located((By.XPATH, user_ref))
         )
-        self.driver.find_element_by_xpath('//p[@class="realname"]//a[@href="{}"]'.format(user_path)).click()
+        self.driver.find_element_by_xpath(user_ref).click()
         WebDriverWait(self.driver, 30, 0.1).until(
-            expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="popup-search-user"]')))
+            EC.invisibility_of_element_located((By.XPATH, '//div[@id="popup-search-user"]'))
+        )
 
     def test_preview(self):
         self.driver.find_element_by_xpath('//button[@id="submit_preview"]').click()

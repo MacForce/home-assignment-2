@@ -4,7 +4,7 @@ import unittest
 from selenium.webdriver import DesiredCapabilities, Remote
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 from pages import MainPage, EditTopicPage, TopicsPage, ViewTopicPage, LoginPage
 
 USERNAME = u'Владимир Мижуев'
@@ -24,7 +24,7 @@ def auth(driver, email=USEREMAIL, password=PASSWORD):
     auth_form.set_password(password)
     auth_form.submit()
     WebDriverWait(driver, 30, 0.1).until(
-         expected_conditions.invisibility_of_element_located((By.XPATH, '//div[@id="popup-login"]'))
+         EC.invisibility_of_element_located((By.XPATH, '//div[@id="popup-login"]'))
     )
 
 def delete_topic(driver, title=TITLE):

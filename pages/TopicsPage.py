@@ -2,7 +2,7 @@
 from Page import BasicPage, Component
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
 
 class Page(BasicPage):
     PATH = '/blog/show/2544/fludilka/'
@@ -101,14 +101,18 @@ class Topic(Component):
         return False
 
     def is_img(self, img_name, align=None, title=None):
-        if img_name in WebDriverWait(self.driver, 30, 0.1).until(
-                lambda d: d.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('src')):
-            if align is not None:
-                if align != self.driver.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('align'):
+        WebDriverWait(self.driver, 30, 0.1).until(
+                EC.visibility_of_element_located((By.XPATH, self.TEXT.format('/img'))))
+        img_tag = self.driver.find_element_by_xpath(self.TEXT.format('/img'))
+        if img_name in img_tag.get_attribute('src'):
+            if align is not None and align != img_tag.get_attribute('align'):
+                if align == 'center':
+                    if 'middle' != img_tag.get_attribute('align'):
+                        return False
+                else:
                     return False
-            if title is not None:
-                if title != self.driver.find_element_by_xpath(self.TEXT.format('/img')).get_attribute('title'):
-                    return False
+            if title is not None and title != img_tag.get_attribute('title'):
+                return False
             return True
         return False
 
@@ -120,7 +124,6 @@ class Topic(Component):
 
     def is_forbid_comment(self):
             return len(self.driver.find_elements_by_xpath('//h4[@class="reply-header"]')) == 0
-
 
     def is_poll(self, answers):
         for i, ans in enumerate(answers):
@@ -134,6 +137,6 @@ class Topic(Component):
     def delete(self):
         self.driver.find_element_by_xpath(self.DELETE_BUTTON).click()
         WebDriverWait(self.driver, 30, 0.1).until(
-            expected_conditions.visibility_of_element_located((By.XPATH, self.DELETE_BUTTON_CONFIRM))
+            EC.visibility_of_element_located((By.XPATH, self.DELETE_BUTTON_CONFIRM))
         )
         self.driver.find_element_by_xpath(self.DELETE_BUTTON_CONFIRM).click()
